@@ -1,0 +1,11 @@
+{application, mochijson3, [
+    {description, "Json lib"},
+    {vsn, "1.0"},
+    {modules, [mochijson3, mochinum, jsonh]},
+    {registered, []},
+    {applications, [
+        kernel,
+        stdlib
+    ]},
+    {env, []}
+]}.
