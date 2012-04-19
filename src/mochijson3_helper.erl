@@ -40,12 +40,17 @@ get_path_value(Path, RD) when is_list(RD) ->
                   Value
             end;
         _ ->
-           % Find further
-           get_path_value(Path, lists:nth(1, RD))
+           case RD of
+               [] ->
+                   error;
+               _ ->
+                   % Find further
+                   get_path_value(Path, lists:nth(1, RD))
+           end
     end;
 
 %% @doc Find value from mochijson3 output
-%% @end  
+%% @end
 get_path_value(Path, RD) when is_tuple(RD) ->
    % Get data struct body
    {struct, DataList} = RD,
@@ -58,14 +63,21 @@ get_path_value(Path, RD) when is_tuple(RD) ->
               Value == NeedFindValue
           end,
           DataList),
+   % Check list what we find (if we not find sequnces we return error)
    case List of
       [] ->
          error;
       _ ->
-          % Return value
-          FindedValue = lists:nth(Num, List),
-          {NeedFindValue, OtherValue} = FindedValue,
-          get_path_value(T, OtherValue)
+          % Check 
+          if
+              Num > length(List) ->
+                  error;
+              true ->
+                  % Return value
+                  FindedValue = lists:nth(Num, List),
+                  {NeedFindValue, OtherValue} = FindedValue,
+                  get_path_value(T, OtherValue)
+         end
    end.
 
 %% =======================================================================================
@@ -127,5 +139,160 @@ get_path_value_test() ->
         
     ?assertEqual(<<"Max">>, get_path_value([{1, <<"response">>}, {1, <<"response2">>}, {1, <<"first_name">>}], Data3)),
         
+    Data4 =
+        {struct, [
+            {<<"resp1">>, <<"resp6">>},
+            {<<"resp2">>, <<"resp4">>},
+            {<<"resp3">>, <<"resp5">>},
+            {<<"resp2">>, <<"aaaaaaaaaaaaaa">>}   
+        ]},
+   
+    ?assertEqual(error, get_path_value([{1, <<"response">>}], Data4)),
+   
+    Data5 =        
+        {struct,[
+            {<<"1">>, <<"2">>},
+            {<<"response">>, [
+                {struct,[
+                    {<<"uid">>,1103656},
+                    {<<"first_name">>,<<"Max">>},
+                    {<<"last_name">>,<<"Bourinov">>},
+                    {<<"response2">>, [
+                        {struct,[
+                            {<<"uid">>,1103656},
+                            {<<"first_name">>,<<"Max">>},
+                            {<<"last_name">>,<<"Bourinov">>}
+                        ]},
+                        {struct,[
+                            {<<"uid">>,1103656},
+                            {<<"first_name">>,<<"Sasha">>},
+                            {<<"last_name">>,<<"Kuleshov">>}
+                        ]}
+                   ]}     
+                 ]},
+                 {struct,[
+                     {<<"uid">>,1103656},
+                     {<<"first_name">>,<<"Max">>},
+                     {<<"last_name">>,<<"Bourinov">>}
+                 ]}
+             ]}
+        ]},
+        
+    ?assertEqual(error, get_path_value([{2, <<"response">>}], Data5)),
+    
+    Data6 = 
+        {struct,[
+            {<<"1">>, <<"2">>},
+            {<<"response">>, [
+                {struct,[
+                    {<<"uid">>,1103656},
+                    {<<"first_name">>,<<"Max">>},
+                    {<<"last_name">>,<<"Bourinov">>},
+                    {<<"response2">>, [
+                        {struct,[
+                            {<<"uid">>,1103656},
+                            {<<"first_name">>,<<"Max">>},
+                            {<<"last_name">>,<<"Bourinov">>}
+                        ]},
+                        {struct,[
+                            {<<"uid">>,1103656},
+                            {<<"first_name">>,<<"Sasha">>},
+                            {<<"last_name">>,<<"Kuleshov">>}
+                        ]}
+                   ]}     
+                 ]},
+                 {struct,[
+                     {<<"uid">>,1103656},
+                     {<<"first_name">>,<<"Max">>},
+                     {<<"last_name">>,<<"Bourinov">>}
+                 ]}
+             ]}
+        ]},
+        
+    ?assertEqual(1103656, get_path_value([{1, <<"response">>}, {1, <<"uid">>}], Data6)),
+    
+    Data7 = 
+        {struct,[
+            {<<"1">>, <<"2">>},
+            {<<"response">>, [
+                {struct,[
+                    {<<"uid">>,1103656},
+                    {<<"first_name">>,<<"Max">>},
+                    {<<"last_name">>,<<"Bourinov">>},
+                    {<<"response2">>, [
+                        {struct,[
+                            {<<"uid">>,1103656},
+                            {<<"first_name">>,<<"Max">>},
+                            {<<"last_name">>,<<"Bourinov">>}
+                        ]},
+                        {struct,[
+                            {<<"uid">>,1103656},
+                            {<<"first_name">>,<<"Sasha">>},
+                            {<<"last_name">>,<<"Kuleshov">>}
+                        ]}
+                   ]}     
+                 ]},
+                 {struct,[
+                     {<<"uid">>,1103656},
+                     {<<"first_name">>,<<"Max">>},
+                     {<<"last_name">>,<<"Bourinov">>}
+                 ]}
+             ]}
+        ]},
+        
+     ?assertEqual(error, get_path_value([{1, <<"uid">>}], Data7)),
+     
+     Data8 = 
+        {struct,[
+            {<<"1">>, <<"2">>},
+            {<<"response">>, [
+                {struct,[
+                    {<<"uid">>,1103656},
+                    {<<"first_name">>,<<"Max">>},
+                    {<<"last_name">>,<<"Bourinov">>},
+                    {<<"response2">>, [
+                        {struct,[
+                            {<<"uid">>,1103656},
+                            {<<"first_name">>,<<"Max">>},
+                            {<<"last_name">>,<<"Bourinov">>}
+                        ]},
+                        {struct,[
+                            {<<"uid">>,1103656},
+                            {<<"first_name">>,<<"Sasha">>},
+                            {<<"last_name">>,<<"Kuleshov">>}
+                        ]}
+                   ]}     
+                 ]},
+                 {struct,[
+                     {<<"uid">>,1103656},
+                     {<<"first_name">>,<<"Max">>},
+                     {<<"last_name">>,<<"Bourinov">>},
+                     {<<"response2">>, [
+                        {struct,[
+                            {<<"uid">>,1103656},
+                            {<<"first_name">>,<<"Max">>},
+                            {<<"last_name">>,<<"Bourinov">>}
+                        ]},
+                        {struct,[
+                            {<<"uid">>,1103656},
+                            {<<"first_name">>,<<"Sasha">>},
+                            {<<"last_name">>,<<"Kuleshov">>}
+                        ]}
+                   ]}     
+                 ]}
+             ]}
+        ]},
+        
+    ?assertEqual(error, get_path_value([{1, <<"uid">>}], Data8)),
+        
+    Data9 =
+        {struct,[
+            {<<"content">>,
+            {struct,[{<<"status">>,<<"placed">>},
+                     {<<"order_id">>,240753069327930}]}},
+                     {<<"method">>,<<"payments_status_update">>}]},
+                     
+    ?assertEqual(240753069327930, get_path_value([{1, <<"content">>}, {1, <<"order_id">>}], Data9)),
+     
     ok.
 -endif.
