@@ -18,10 +18,9 @@ get_path_value([], Data) ->
     Data;
 
 %% @doc Find value from mochijson3 output
-%% @end       
+%% @end         
 get_path_value(Path, RD) when is_list(RD) ->
     % Check request data length
-    % [{Num, RequestBody}, ...]
     case length(Path) of
         1 ->
             % Get current request body
@@ -29,23 +28,28 @@ get_path_value(Path, RD) when is_list(RD) ->
             % Find in the data structure
             FindedData = lists:nth(Num, RD),
             % Get finded data
-            {struct, NeedToFindValue} = FindedData,    
-            % Get value
-            TryGetValue = lists:keyfind(NeedToFind, 1, NeedToFindValue),
-            case TryGetValue of
-                false ->
-                   error;
-                _ ->
-                  {_, Value} = TryGetValue,
-                  Value
-            end;
+            {MaybeStruct, NeedToFindValue} = FindedData,
+            case MaybeStruct of
+                struct ->
+                    % Get value
+                    TryGetValue = lists:keyfind(NeedToFind, 1, NeedToFindValue),
+                    case TryGetValue of
+                        false ->
+                            error;
+                        _ ->
+                            {_, Value} = TryGetValue,
+                            Value
+                    end;
+                    _ ->
+                        MaybeStruct
+           end;
         _ ->
            case RD of
                [] ->
                    error;
                _ ->
                    % Find further
-                   get_path_value(Path, lists:nth(1, RD))
+                   get_path_value(Path, {struct, RD})
            end
     end;
 
@@ -57,26 +61,50 @@ get_path_value(Path, RD) when is_tuple(RD) ->
    % Get first request body
    [H | T] = Path,
    % Find value
-   {Num, NeedFindValue} = H,   
+   {Num, NeedFindValue} = H, 
+     
    List = lists:filter(fun(X) -> 
-              {Value, _} = X,
-              Value == NeedFindValue
+              {Value, JSonValue} = X,
+              if
+                  Value == struct ->
+                     TryToFindNext = lists:keyfind(NeedFindValue, 1, JSonValue),
+                     case TryToFindNext of
+                        false ->
+                            false;
+                        _ ->
+                            true  
+                     end;   
+                  true ->
+                     Value == NeedFindValue
+              end
           end,
           DataList),
-   % Check list what we find (if we not find sequnces we return error)
+      
    case List of
       [] ->
          error;
       _ ->
-          % Check 
           if
               Num > length(List) ->
                   error;
               true ->
                   % Return value
                   FindedValue = lists:nth(Num, List),
-                  {NeedFindValue, OtherValue} = FindedValue,
-                  get_path_value(T, OtherValue)
+                  {IsStruct, OtherValue} = FindedValue,
+                  case IsStruct of
+                      struct ->
+                          {struct, FindNextValue} = FindedValue,
+                          TryToFindNextValue = lists:keyfind(NeedFindValue, 1, FindNextValue),
+                          case TryToFindNextValue of
+                              false ->
+                                  error;
+                              _ ->
+                                  {_, Value} = TryToFindNextValue,
+                                  get_path_value(T, Value)  
+                          end;
+                      _ ->
+                          get_path_value(T, OtherValue)
+                  end
          end
    end.
 
