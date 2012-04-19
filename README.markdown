@@ -15,7 +15,7 @@ Json = mochijson3:decode(Body).
          {<<"croupier">>,<<"game1@demo.pokerbroker.org">>}]}
 
 % Get croupier field
-Result = mochijson3_helper:get_path_value([<<"croupier">>], Json).
+Result = mochijson3_helper:get_path_value([{1, <<"croupier">>}], Json).
 
 ->> <<"game1@demo.pokerbroker.org">>
 
