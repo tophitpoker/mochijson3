@@ -10,8 +10,8 @@
 
 -export([get_path_value/2]).
 
-%%----------------------------------------------------------------------------------------
-%% @doc Allows extract data from structure from mochijson:decode
+%% @doc Allows extract data from structure from mochijson3:decode
+%% @end
 -spec get_path_value(Path :: [binary() | pos_integer()], RD :: any()) -> any() | error.
 get_path_value(Path, RD) ->
 	[Key | Tail] = Path,
@@ -34,9 +34,9 @@ get_path_value(Path, RD) ->
 			error
 	end.
 
-%%----------------------------------------------------------------------------------------
 %% @doc Used to get values from POST requests
--spec get_value(Key :: string(), RD :: [{string(), string()}]) -> error | term().
+%% @end
+-spec get_value(binary(),maybe_improper_list()) -> any().
 get_value(Key, RD) when is_binary(Key) -> % string
     case lists:keyfind(Key, 1, RD) of
         false -> error;

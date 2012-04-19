@@ -6,11 +6,18 @@
 % Json data
 Body = "{\"a\":\"handoff\",\"croupier\":\"game1@demo.pokerbroker.org\"}".
 
+->> "{\"a\":\"handoff\",\"croupier\":\"game1@demo.pokerbroker.org\"}"
+
 % Decode json
 Json = mochijson3:decode(Body).
 
+->> {struct,[{<<"a">>,<<"handoff">>},
+         {<<"croupier">>,<<"game1@demo.pokerbroker.org">>}]}
+
 % Get croupier field
 Result = mochijson3_helper:get_path_value([<<"croupier">>], Json).
+
+->> <<"game1@demo.pokerbroker.org">>
 
 ```
 

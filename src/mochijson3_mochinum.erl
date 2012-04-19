@@ -24,7 +24,7 @@
 %% @doc  Returns a string that accurately represents the given integer or float
 %%       using a conservative amount of digits. Great for generating
 %%       human-readable output, or compact ASCII serializations for floats.
--spec digits(N :: integer()) -> string().
+-spec digits(N :: integer() | float()) -> string().
 digits(N) when is_integer(N) ->
     integer_to_list(N);
 digits(0.0) ->
@@ -45,7 +45,7 @@ digits(Float) ->
 %% @doc  Return the fractional and exponent part of an IEEE 754 double,
 %%       equivalent to the libc function of the same name.
 %%       F = Frac * pow(2, Exp).
--spec frexp(F :: float()) -> {Frac::float(), Exp::float()}.
+-spec frexp(F :: number()) -> {float(), integer()}.
 frexp(F) ->
     frexp1(unpack(F)).
 
