@@ -23,6 +23,9 @@ docs:
 
 test: test-eunit
 
+test-eunit:
+	@./rebar eunit skip_deps=true
+
 PLT_NAME=.appenv_dialyzer.plt
 
 $(PLT_NAME):
