@@ -4,20 +4,15 @@
 
 ```erlang
 % Json data
-Body = "{\"a\":\"handoff\",\"croupier\":\"game1@demo.pokerbroker.org\"}".
-
-> "{\"a\":\"handoff\",\"croupier\":\"game1@demo.pokerbroker.org\"}"
+Body = <<"{\"key1\":\"value1\",\"key2\":\"value2\"}">>.
 
 % Decode json
 Json = mochijson3:decode(Body).
 
-> {struct,[{<<"a">>,<<"handoff">>},
-         {<<"croupier">>,<<"game1@demo.pokerbroker.org">>}]}
-
 % Get croupier field
-Result = mochijson3_helper:get_path_value([{1, <<"croupier">>}], Json).
+Result = mochijson3_helper:get_path_value([{1, <<"key1">>}], Json).
 
-> <<"game1@demo.pokerbroker.org">>
+% Now Result is equal to <<"value1">>
 
 ```
 
