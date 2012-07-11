@@ -12,7 +12,9 @@
 
 %% @doc Find value from mochijson3 output
 %% @end
--spec get_path_value(Request :: [{pos_integer(), binary()}] | [], Data :: [{atom(), [{binary(), binary()}, ...]}]) -> binary().
+-spec get_path_value(Request :: [{pos_integer(), binary()}] | [], 
+                        Data :: [{atom(), [{binary(), binary()}, ...]}] | {atom(), [{binary(), binary()}]}) -> 
+                                                                                        Value :: binary() | error.
 get_path_value([], Data) ->
     % if we have no [], we return Data
     Data;
